@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Bitmap内存占用的计算Bitmap加载进内存后占用的内存大小主要取决于三个因数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="bitmap占用内存计算与优化方式">
+<meta property="og:url" content="http://yoursite.com/2016/10/23/3.bitmap占用内存计算与优化方式/index.html">
+<meta property="og:site_name" content="贝风的博客">
+<meta property="og:description" content="Bitmap内存占用的计算Bitmap加载进内存后占用的内存大小主要取决于三个因数">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://o9gk0j9tg.bkt.clouddn.com/image/before.png">
+<meta property="og:image" content="http://o9gk0j9tg.bkt.clouddn.com/hdpi.png">
+<meta property="og:image" content="http://o9gk0j9tg.bkt.clouddn.com/mdpi.png">
+<meta property="og:image" content="http://o9gk0j9tg.bkt.clouddn.com/xhdpi.png">
+<meta property="og:updated_time" content="2019-02-18T02:02:55.787Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="bitmap占用内存计算与优化方式">
+<meta name="twitter:description" content="Bitmap内存占用的计算Bitmap加载进内存后占用的内存大小主要取决于三个因数">
+<meta name="twitter:image" content="http://o9gk0j9tg.bkt.clouddn.com/image/before.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/10/23/3.bitmap占用内存计算与优化方式/">
+
+
+
+
+
+  <title>bitmap占用内存计算与优化方式 | 贝风的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">贝风的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/23/3.bitmap占用内存计算与优化方式/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="贝风">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="贝风的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">bitmap占用内存计算与优化方式</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-23T20:34:04+08:00">
+                2016-10-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/android/" itemprop="url" rel="index">
+                    <span itemprop="name">android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h4 id="Bitmap内存占用的计算"><a href="#Bitmap内存占用的计算" class="headerlink" title="Bitmap内存占用的计算"></a>Bitmap内存占用的计算</h4><p>Bitmap加载进内存后占用的内存大小主要取决于三个因数<a id="more"></a></p>
+<ul>
+<li><p>图片本身的分辨率</p>
+<blockquote>
+<p>width * height，图片本身的属性，与格式（.jpg、.png、.bmp）无关</p>
+</blockquote>
+</li>
+<li><p>色彩格式</p>
+<blockquote>
+<p>在android系统中主要有四种格式：</p>
+<ul>
+<li>ALPHA_8        //1字节</li>
+<li>RGB_565        //2字节</li>
+<li>ARGB_4444    //2字节</li>
+<li>ARGB_8888  //4字节</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li>目标设备的密度和图片文件所放的资源目录对应的Dpi比值<br>资源目录对应的Dpi:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align:center">ldpi</th>
+<th style="text-align:center">mdpi</th>
+<th style="text-align:center">hdpi</th>
+<th style="text-align:center">xhdpi</th>
+<th style="text-align:center">xxhdpi</th>
+<th style="text-align:center">xxxhdpi</th>
+<th style="text-align:center"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>densitity</td>
+<td style="text-align:center">0.75</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">1.5</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">3.5</td>
+<td style="text-align:center">4</td>
+</tr>
+<tr>
+<td>dentityDpi</td>
+<td style="text-align:center">120</td>
+<td style="text-align:center">160</td>
+<td style="text-align:center">240</td>
+<td style="text-align:center">320</td>
+<td style="text-align:center">480</td>
+<td style="text-align:center">560</td>
+<td style="text-align:center">640</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>可以通过此方法获取盒子的dpi:<br><code>int densityDpi = Resources.getSystem().getConfiguration().densityDpi</code></p>
+</blockquote>
+<p>计算一张bitmap所占的内存公式是：</p>
+<blockquote>
+<p> bitmap所占内存 =  (w * K) * (h * K) * R</p>
+<ul>
+<li>w、h分别是图片的长和宽</li>
+<li>K是目标设备Dpi/文件所在资源目录Dpi</li>
+<li>R是色彩格式对应的字节(android默认为ARGB_8888，即占4个字节)</li>
+</ul>
+</blockquote>
+<p>例子：<br>一张（1280*1024）的图片在dpi为240的设备上<br>图片加载前程序占用的内存是：<br><img src="http://o9gk0j9tg.bkt.clouddn.com/image/before.png" alt></p>
+<blockquote>
+<p>如果图片放在drawable-hdpi的文件夹里所占用的内存就是：<br><img src="http://o9gk0j9tg.bkt.clouddn.com/hdpi.png" alt><br>差值为：8.145MB - 3.145MB = 5 MB<br>用上述公式计算出加载图片所占内存为：<br>（1280 *（240/240））*（1024*（240/240））*4  = 5242880 B = 5MB</p>
+</blockquote>
+<blockquote>
+<p>如果图片放在drawable-mdpi的文件夹里所占用的内存就是：<br> <img src="http://o9gk0j9tg.bkt.clouddn.com/mdpi.png" alt><br> 差值为：14.395MB - 3.145MB = 11.25 MB<br>用上述公式计算出加载图片所占内存为：<br>（1280 *（240/160））*（1024*（240/160））*4  =  11796480 B = 11.25MB</p>
+</blockquote>
+<blockquote>
+<p>如果图片放在drawable-xhdpi的文件夹里所占用的内存就是：<br> <img src="http://o9gk0j9tg.bkt.clouddn.com/xhdpi.png" alt><br>   差值为：5.985MB - 3.145MB = 2.84 MB<br>用上述公式计算出加载图片所占内存为：<br>（1280 *（240/320））*（1024*（240/320））*4  =  737,280 B = 2.8125MB</p>
+</blockquote>
+<p><strong>注意：</strong><br>1、若在多个资源文件夹都有同一张图片，android系统会首先从与盒子相同的dpi的资源文件夹开始检索，若没有则往上检索，若往上都没有，再往下检索。</p>
+<blockquote>
+<p>如，在dpi为240(hdpi)的盒子上的检索顺序为 :<br>drawable-hdpi-&gt;drawable-xhdpi-&gt;drawable-xxhdpi-&gt;drawable-xxxhdpi-&gt;drawable-mdpi-&gt;drawable-ldpi</p>
+</blockquote>
+<p>2、放在drawable目录下的图片文件默认为mdpi的</p>
+<p>3、放在assets目录下或者从<strong>网络请求</strong>回来的图片也可以用上述公式计算且<strong>K = 1</strong></p>
+<p>4、jpg、png、bmp等格式只会影响磁盘存储大小与图片质量，并不影响加载进内存的大小</p>
+<blockquote>
+<p>如一张（1280 *1024）的图片，以JPG格式保存为424KB，转化为PNG格式为2.62MB，但是加载进内存都是5MB（K=1）</p>
+</blockquote>
+<h4 id="Bitmap的优化"><a href="#Bitmap的优化" class="headerlink" title="Bitmap的优化"></a>Bitmap的优化</h4><p>关于Bitmap的优化，主要从两个方面入手：</p>
+<ul>
+<li>单张大图片的内存减小</li>
+<li>一系列图片的总内存减小</li>
+</ul>
+<h5 id="如何在加载大图片时减少OOM发生"><a href="#如何在加载大图片时减少OOM发生" class="headerlink" title="如何在加载大图片时减少OOM发生"></a>如何在加载大图片时减少OOM发生</h5><ul>
+<li><p>尽量把图片放在高密度的资源文件夹</p>
+<blockquote>
+<p>上述计算公式可知，高密度盒子（hdpi）从低密度资源文件夹（drawable-mdpi）加载图片资源，图片会被放大，<br>从更高密度的资源文件夹（drawable-xhdpi）加载图片资源，图片则会被缩小</p>
+</blockquote>
+</li>
+<li><p>使用采样缩小图片</p>
+ <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BitmapFactory.Options options = <span class="keyword">new</span> BitmapFactory.Options();</span><br><span class="line"> options.inSampleSize = <span class="number">2</span>;<span class="comment">//采样率</span></span><br><span class="line"> Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.test, options);</span><br><span class="line"> mIv.setImageBitmap(bitmap);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<blockquote>
+<p>上述代码的采样率为2，则图片的长和宽都会被缩小两倍，则内存的会缩小4倍</p>
+</blockquote>
+<ul>
+<li>选择合理的像素格式<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BitmapFactory.Options options = <span class="keyword">new</span> BitmapFactory.Options();</span><br><span class="line"> options.inPreferredConfig = Bitmap.Config.ARGB_4444;</span><br><span class="line"> Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.test, options);</span><br><span class="line"> mIv.setImageBitmap(bitmap);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<blockquote>
+<p>主动设置像素格式把默认的ARGB_8888改为ARGB_4444，可以使图片占用的内存缩小2倍<br>注意：格式转换并不是随意的，一般ARGB_8888可以转化为ARGB_4444或RGB_565，但若转为ALPHA_8可能会失败，失败则仍默认为ARGB_8888格式，<code>bitmap.getConfig()</code>方法可以获得bitmap具体的像素格式</p>
+</blockquote>
+<ul>
+<li>主动回收Bitmap<blockquote>
+<p>在确认已经用不到Bitmap对象的时候调用bitmap.recycle()方法主动回收对象，不过使用时要注意，一定要在Bitmap对象的生命周期结束时再调用。</p>
+</blockquote>
+</li>
+</ul>
+<p>以上是处理单个图片减少占用内存的一些方法，主要是通过缩小图片大小或者降低分辨率来达到目的，这些方法多少会对图片的清晰度造成影响，因此使用时还须具体情况具体分析。</p>
+<h4 id="加载一系列图片的总内存减小"><a href="#加载一系列图片的总内存减小" class="headerlink" title="加载一系列图片的总内存减小"></a>加载一系列图片的总内存减小</h4><p>关于一系列图片的加载，其实就是通过对每个单张图片大小的控制，再设置缓存（内存缓存，磁盘缓存）的方式避免重复加载以及耗费流量。<br>如开源项目Picasso也是通过采样的方法来缩小图片，其源码如下：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// reqWidth:目标宽度 reqHeight:目标高度</span></span><br><span class="line"><span class="comment">//width:初始宽度  height:初始高度</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">calculateInSampleSize</span><span class="params">(<span class="keyword">int</span> reqWidth, <span class="keyword">int</span> reqHeight, <span class="keyword">int</span> width, <span class="keyword">int</span> height,</span></span></span><br><span class="line"><span class="function"><span class="params">      BitmapFactory.Options options, Request request)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">int</span> sampleSize = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">if</span> (height &gt; reqHeight || width &gt; reqWidth) &#123;</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">int</span> heightRatio;</span><br><span class="line">      <span class="keyword">final</span> <span class="keyword">int</span> widthRatio;</span><br><span class="line">      <span class="keyword">if</span> (reqHeight == <span class="number">0</span>) &#123;</span><br><span class="line">        sampleSize = (<span class="keyword">int</span>) Math.floor((<span class="keyword">float</span>) width / (<span class="keyword">float</span>) reqWidth);</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (reqWidth == <span class="number">0</span>) &#123;</span><br><span class="line">        sampleSize = (<span class="keyword">int</span>) Math.floor((<span class="keyword">float</span>) height / (<span class="keyword">float</span>) reqHeight);</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        heightRatio = (<span class="keyword">int</span>) Math.floor((<span class="keyword">float</span>) height / (<span class="keyword">float</span>) reqHeight);</span><br><span class="line">        widthRatio = (<span class="keyword">int</span>) Math.floor((<span class="keyword">float</span>) width / (<span class="keyword">float</span>) reqWidth);</span><br><span class="line">        sampleSize = request.centerInside</span><br><span class="line">            ? Math.max(heightRatio, widthRatio)</span><br><span class="line">            : Math.min(heightRatio, widthRatio);</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    options.inSampleSize = sampleSize;</span><br><span class="line">    options.inJustDecodeBounds = <span class="keyword">false</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></p>
+<p>同样的Glide也是通过采样的方法缩小图片：<br><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Visible for testing.</span></span><br><span class="line"> <span class="function"><span class="keyword">static</span> <span class="keyword">void</span> <span class="title">calculateScaling</span><span class="params">(DownsampleStrategy downsampleStrategy, <span class="keyword">int</span> degreesToRotate,</span></span></span><br><span class="line"><span class="function"><span class="params">     <span class="keyword">int</span> sourceWidth, <span class="keyword">int</span> sourceHeight, <span class="keyword">int</span> requestedWidth, <span class="keyword">int</span> requestedHeight,</span></span></span><br><span class="line"><span class="function"><span class="params">     BitmapFactory.Options options)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">      ···</span><br><span class="line">   <span class="keyword">int</span> outWidth = (<span class="keyword">int</span>) (exactScaleFactor * sourceWidth + <span class="number">0.5f</span>);</span><br><span class="line">   <span class="keyword">int</span> outHeight = (<span class="keyword">int</span>) (exactScaleFactor * sourceHeight + <span class="number">0.5f</span>);</span><br><span class="line"></span><br><span class="line">   <span class="keyword">int</span> widthScaleFactor = sourceWidth / outWidth;</span><br><span class="line">   <span class="keyword">int</span> heightScaleFactor = sourceHeight / outHeight;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">int</span> scaleFactor = rounding == SampleSizeRounding.MEMORY</span><br><span class="line">       ? Math.max(widthScaleFactor, heightScaleFactor)</span><br><span class="line">       : Math.min(widthScaleFactor, heightScaleFactor);</span><br><span class="line"></span><br><span class="line">   <span class="keyword">int</span> powerOfTwoSampleSize;</span><br><span class="line">   <span class="comment">// BitmapFactory does not support downsampling wbmp files on platforms &lt;= M. See b/27305903.</span></span><br><span class="line">   <span class="keyword">if</span> (Build.VERSION.SDK_INT &lt;= <span class="number">23</span></span><br><span class="line">       &amp;&amp; NO_DOWNSAMPLE_PRE_N_MIME_TYPES.contains(options.outMimeType)) &#123;</span><br><span class="line">     powerOfTwoSampleSize = <span class="number">1</span>;</span><br><span class="line">   &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">     powerOfTwoSampleSize = Math.max(<span class="number">1</span>, Integer.highestOneBit(scaleFactor));</span><br><span class="line">     <span class="keyword">if</span> (rounding == SampleSizeRounding.MEMORY</span><br><span class="line">         &amp;&amp; powerOfTwoSampleSize &lt; (<span class="number">1</span>.f / exactScaleFactor)) &#123;</span><br><span class="line">       powerOfTwoSampleSize = powerOfTwoSampleSize &lt;&lt; <span class="number">1</span>;</span><br><span class="line">     &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="keyword">float</span> adjustedScaleFactor = powerOfTwoSampleSize * exactScaleFactor;</span><br><span class="line"></span><br><span class="line">   options.inSampleSize = powerOfTwoSampleSize;</span><br><span class="line">   ···</span><br><span class="line"></span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure></p>
+<p>由两段源码可知Glide与Picsso都是通过采样方式来缩小图片，不同的是Glide会动态计算ImageView的宽高并缓存缩小后的图片，而Picsso需要手动调用resize(width,heith)方法才会缩小，否则直接加载原图。另外，Glide的默认像素格式是RGB_565，Picasso的默认格式与系统默认一致都是ARGB_8888，因此在内存优化方面，Glide相对Picasso有优势。</p>
+<h3 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h3><p><a href="http://blog.csdn.net/dinko321/article/details/7992776" target="_blank" rel="noopener">dpi 、 dip 、分辨率、屏幕尺寸、px、density 关系以及换算</a></p>
+<p><a href="http://mp.weixin.qq.com/s?__biz=MzA3NTYzODYzMg==&amp;mid=403263974&amp;idx=1&amp;sn=b0315addbc47f3c38e65d9c633a12cd6&amp;scene=1&amp;srcid=01141LHDGsPPf3AEvJVMJSwH&amp;from=singlemessage&amp;isappinstalled=0#wechat_redirect" target="_blank" rel="noopener">Android 开发绕不过的坑：你的 Bitmap 究竟占多大内存？</a></p>
+<p><a href="http://www.cnblogs.com/wanqieddy/p/4479868.html" target="_blank" rel="noopener">Picasso和Glide的对比使用</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/22/2.AppsFlyer踩坑记/" rel="next" title="AppsFlyer踩坑记">
+                <i class="fa fa-chevron-left"></i> AppsFlyer踩坑记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/10/27/4.android-studio使用MAT/" rel="prev" title="android studio使用MAT分析内存">
+                android studio使用MAT分析内存 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">贝风</p>
+              <p class="site-description motion-element" itemprop="description">code and life.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Bitmap内存占用的计算"><span class="nav-number">1.</span> <span class="nav-text">Bitmap内存占用的计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Bitmap的优化"><span class="nav-number">2.</span> <span class="nav-text">Bitmap的优化</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#如何在加载大图片时减少OOM发生"><span class="nav-number">2.1.</span> <span class="nav-text">如何在加载大图片时减少OOM发生</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#加载一系列图片的总内存减小"><span class="nav-number">3.</span> <span class="nav-text">加载一系列图片的总内存减小</span></a></li></ol><li class="nav-item nav-level-3"><a class="nav-link" href="#参考博客"><span class="nav-number"></span> <span class="nav-text">参考博客</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">贝风</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="LeakCanary,内存泄露,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="LeakCanary使用说明原理在垃圾回收过程中，可以对一个对象有很多的强引用。当这些强引用的个数总和为零的时候，垃圾回收器就会释放掉它。弱引用，就是一种不增加引用总数的持有引用方式。垃圾回收器是否决定要回收一个对象，只取决于它是否还存在强引用。所以说，如果将 Activity 持有为弱引用，一旦发现弱引用持有的对象已经被销毁了，那么这个 Activity 就已经被垃圾回收器回收了。否则，那可以大">
+<meta name="keywords" content="LeakCanary,内存泄露">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LeakCanary 检测内存泄露（内附实例解析）">
+<meta property="og:url" content="http://yoursite.com/2016/10/31/6.LeakCanary使用（内附结果分析）/index.html">
+<meta property="og:site_name" content="贝风的博客">
+<meta property="og:description" content="LeakCanary使用说明原理在垃圾回收过程中，可以对一个对象有很多的强引用。当这些强引用的个数总和为零的时候，垃圾回收器就会释放掉它。弱引用，就是一种不增加引用总数的持有引用方式。垃圾回收器是否决定要回收一个对象，只取决于它是否还存在强引用。所以说，如果将 Activity 持有为弱引用，一旦发现弱引用持有的对象已经被销毁了，那么这个 Activity 就已经被垃圾回收器回收了。否则，那可以大">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://i.imgur.com/aN37QS8.jpg">
+<meta property="og:updated_time" content="2019-02-18T02:02:55.787Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LeakCanary 检测内存泄露（内附实例解析）">
+<meta name="twitter:description" content="LeakCanary使用说明原理在垃圾回收过程中，可以对一个对象有很多的强引用。当这些强引用的个数总和为零的时候，垃圾回收器就会释放掉它。弱引用，就是一种不增加引用总数的持有引用方式。垃圾回收器是否决定要回收一个对象，只取决于它是否还存在强引用。所以说，如果将 Activity 持有为弱引用，一旦发现弱引用持有的对象已经被销毁了，那么这个 Activity 就已经被垃圾回收器回收了。否则，那可以大">
+<meta name="twitter:image" content="http://i.imgur.com/aN37QS8.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2016/10/31/6.LeakCanary使用（内附结果分析）/">
+
+
+
+
+
+  <title>LeakCanary 检测内存泄露（内附实例解析） | 贝风的博客</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">贝风的博客</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/10/31/6.LeakCanary使用（内附结果分析）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="贝风">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="贝风的博客">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">LeakCanary 检测内存泄露（内附实例解析）</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2016-10-31T22:05:20+08:00">
+                2016-10-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/android/" itemprop="url" rel="index">
+                    <span itemprop="name">android</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="LeakCanary使用说明"><a href="#LeakCanary使用说明" class="headerlink" title="LeakCanary使用说明"></a>LeakCanary使用说明</h3><h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><p>在垃圾回收过程中，可以对一个对象有很多的强引用。当这些强引用的个数总和为零的时候，垃圾回收器就会释放掉它。<br>弱引用，就是一种不增加引用总数的持有引用方式。垃圾回收器是否决定要回收一个对象，只取决于它是否还存在强引用。所以说，如果将 Activity 持有为弱引用，一旦发现弱引用持有的对象已经被销毁了，那么这个 Activity 就已经被垃圾回收器回收了。否则，那可以大概确定这个 Activity 已经被泄露了。<a id="more"></a></p>
+<p>LeakCanary核心原理就是<code>WrakRefercence</code>与<code>ReferenceQueue</code>与<code>JVM垃圾回收机制</code>之间的关系。弱引用（WrakRefercence）可以和一个引用队列（ReferenceQueue）联合使用，即用一个弱引用指向所检测的对象，并把它对应的key加入到一个Set中，当发现弱引用所指向的对象被销毁(通过关联的引用对列可以判断对象是否被销毁)，则把key移出Set，并判断对象无泄漏；如果发现弱引用一直没有被销毁，则对象的key会一直留在Set中，判断对象已泄漏。</p>
+<h4 id="检测流程图"><a href="#检测流程图" class="headerlink" title="检测流程图"></a>检测流程图</h4><p><img src="http://i.imgur.com/aN37QS8.jpg" alt></p>
+<h4 id="使用说明"><a href="#使用说明" class="headerlink" title="使用说明"></a>使用说明</h4><p>依赖：<br>debugCompile ‘com.squareup.leakcanary:leakcanary-android:1.4-beta2’<br>releaseCompile ‘com.squareup.leakcanary:leakcanary-android-no-op:1.4-beta2’</p>
+<ul>
+<li><p>自动监控4.0版本以上Activity</p>
+<p>LeakCanary.install() 会返回一个预定义的 RefWatcher，同时也会启用一个 ActivityRefWatcher，用于自动监控调用 Activity.onDestroy() 之后泄露的 activity。但自动监控只支持4.0以上的版本，原因是其中在watch 每个Activity时适用了Application的<code>registerActivityLifecycleCallback</code>方法，这个方法只在4.0上才支持。</p>
+</li>
+<li><p>监控Fragment&amp;4.0版本以下Activity 在其onDestroy()方法写上以下代码即可</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onDestroy</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">super</span>.onDestroy();</span><br><span class="line">    RefWatcher refWatcher = ExampleApplication.getRefWatcher(getActivity());</span><br><span class="line">    refWatcher.watch(<span class="keyword">this</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>监控其他对象</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">	 	...</span><br><span class="line">RefWatcher refWatcher = ExampleApplication.getRefWatcher(getActivity());</span><br><span class="line">refWatcher.watch(someObjNeedGced);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="结果分析"><a href="#结果分析" class="headerlink" title="结果分析"></a>结果分析</h3><ul>
+<li><p>LeakCanary会在内存泄露时的dump内存出来保存到<code>/sdcard/download/leakcanary-&lt;package&gt;/xxx.hprof</code>文件内，有兴趣的同学可以用MAT分析一下，MAT的使用方法可以参考<a href="https://flybeifeng.github.io/2016/10/27/android-studio%E4%BD%BF%E7%94%A8MAT/" target="_blank" rel="noopener">android studio使用MAT分析内存</a>。此外LeakCanary本身会使用另一个开源框架<a href="https://github.com/square/haha" target="_blank" rel="noopener">haha</a>分析hprof文件（分析结果保存在该目录的<code>xxx.hprof.result</code>文件内），并且配套生成一个<code>Leaks</code>的桌面入口解析结果文件</p>
+</li>
+<li><p>此外，LeakCanary会把分析的结果打印的logcat（标签为leakcanary），开发者可以根据logcat的信息定位泄漏的原因以及位置加以修复<br>以下是几个实例解释</p>
+</li>
+</ul>
+<h4 id="实例一"><a href="#实例一" class="headerlink" title="实例一"></a>实例一</h4><ul>
+<li>代码：<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MainActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">        setContentView(R.layout.main_activity);</span><br><span class="line"></span><br><span class="line">        View button = findViewById(R.id.async_task);</span><br><span class="line">        button.setOnClickListener(<span class="keyword">new</span> View.OnClickListener() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onClick</span><span class="params">(View v)</span> </span>&#123;</span><br><span class="line">                startAsyncTask();</span><br><span class="line">                Toast.makeText(MainActivity.<span class="keyword">this</span>, <span class="string">"aa"</span>, Toast.LENGTH_SHORT).show();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">startAsyncTask</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">new</span> AsyncTask&lt;Void, Void, Void&gt;() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">protected</span> Void <span class="title">doInBackground</span><span class="params">(Void... params)</span> </span>&#123;</span><br><span class="line">                <span class="comment">// Do some slow work in background</span></span><br><span class="line">                SystemClock.sleep(<span class="number">20000</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;.execute();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>如果在AsyncTask做了耗时工作，在任务结束前就已经退出了Acitivity，这时就会发生内存泄漏。</p>
+<ul>
+<li>LeakCanary分析的泄漏信息：<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">In com.example.leakcanary:1.0:1. // 包名：版本名：版本号</span><br><span class="line">* com.example.leakcanary.MainActivity has leaked:// 泄漏的类是MainActivity</span><br><span class="line">* -----------------------------泄漏原因开始-------------------------------------------</span><br><span class="line">* GC ROOT thread java.lang.Thread.&lt;Java Local&gt; (named 'AsyncTask #1')</span><br><span class="line">* references com.example.leakcanary.MainActivity$2.this$0 (anonymous subclass of android.os.AsyncTask)</span><br><span class="line">* -----------------------------泄漏原因结束-------------------------------------------</span><br><span class="line">* leaks com.example.leakcanary.MainActivity instance</span><br><span class="line">* Retaining: 3.1 KB. // 泄漏的大小</span><br><span class="line">* Reference Key: 42a0dc4c-1049-4697-a05d-f57f2b41c4fd</span><br><span class="line">* Device: //设备信息</span><br><span class="line">* Android Version: // 系统信息</span><br><span class="line">* Durations: // 分析信息</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>由上述结果可知，在MainAcivity关闭之后，匿名的AsyncTask子类仍持有MainActivity的引用导致泄漏</p>
+<h4 id="实例二"><a href="#实例二" class="headerlink" title="实例二"></a>实例二</h4><ul>
+<li><p>代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestActivity</span> <span class="keyword">extends</span> <span class="title">Activity</span> </span>&#123;</span><br><span class="line">     <span class="meta">@Override</span></span><br><span class="line">     <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">         <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">         setContentView(R.layout.activity_test);</span><br><span class="line">         TextView textView = (TextView) findViewById(R.id.test_text_view);</span><br><span class="line">         TestDataModel.getInstance().setRetainedTextView(textView);</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line"> ···</span><br><span class="line"> <span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TestDataModel</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> TestDataModel sInstance;</span><br><span class="line">    <span class="keyword">private</span> TextView mRetainedTextView;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> TestDataModel <span class="title">getInstance</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (sInstance == <span class="keyword">null</span>) &#123;</span><br><span class="line">            sInstance = <span class="keyword">new</span> TestDataModel();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sInstance;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setRetainedTextView</span><span class="params">(TextView textView)</span> </span>&#123;</span><br><span class="line">        mRetainedTextView = textView;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>LeakCanary分析的泄漏信息</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">In com.example.myleakdemo:1.0:1.</span><br><span class="line">* com.example.myleakdemo.TestActivity has leaked:</span><br><span class="line">* -----------------------------泄漏原因开始-------------------------------------------</span><br><span class="line">* GC ROOT static com.example.myleakdemo.TestDataModel.sInstance</span><br><span class="line">* references com.example.myleakdemo.TestDataModel.mRetainedTextView</span><br><span class="line">* references android.widget.TextView.mContext</span><br><span class="line">* -----------------------------泄漏原因结束-------------------------------------------</span><br><span class="line">* leaks com.example.myleakdemo.TestActivity instance</span><br><span class="line">* Retaining: 2.9 KB.</span><br><span class="line">* Reference Key: 4e591304-d6a3-48ee-8a5f-ec00642bdd98</span><br><span class="line">* Device: //设备信息</span><br><span class="line">* Android Version:  // 系统信息</span><br><span class="line">* Durations: // 分析信息</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>泄漏原因：</p>
+<ul>
+<li>TestDataModel的静态实例持有了成员变量mRetainedTextView</li>
+<li>mRetainedTextView持有了一个TextView的实例</li>
+<li>TextView又持有了mContext<br>最终导致TestActivity泄漏</li>
+</ul>
+<h3 id="补充"><a href="#补充" class="headerlink" title="补充"></a>补充</h3><p>GC(Garbage Collector) roots，特指的是垃圾收集器（Garbage Collector）的对象，GC会收集那些不是GC roots且没有被GC roots引用的对象。<br>一个对象可以属于多个root，GC root有几下种：</p>
+<ul>
+<li>Class - 由系统类加载器(system class loader)加载的对象，这些类是不能够被回收的，他们可以以静态字段的方式保存持有其它对象。我们需要注意的一点就是，通过用户自定义的类加载器加载的类，除非相应的java.lang.Class实例以其它的某种（或多种）方式成为roots，否则它们并不是roots，.</li>
+<li>Thread - 活着的线程</li>
+<li>Stack Local - Java方法的local变量或参数</li>
+<li>JNI Local - JNI方法的local变量或参数</li>
+<li>JNI Global - 全局JNI引用</li>
+<li>Monitor Used - 用于同步的监控对象</li>
+<li>Held by JVM - 用于JVM特殊目的由GC保留的对象，但实际上这个与JVM的实现是有关的。可能已知的一些类型是：系统类加载器、一些JVM知道的重要的异常类、一些用于处理异常的预分配对象以及一些自定义的类加载器等。然而，JVM并没有为这些对象提供其它的信息，因此就只有留给分析分员去确定哪些是属于”JVM持有”的了。</li>
+</ul>
+<h3 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h3><p><a href="https://realm.io/cn/news/droidcon-ricau-memory-leaks-leakcanary/" target="_blank" rel="noopener">用 LeakCanary 检测内存泄漏</a></p>
+<p><a href="http://www.liaohuqiu.net/cn/posts/leak-canary/" target="_blank" rel="noopener"> LeakCanary: 让内存泄露无所遁形 </a></p>
+<p><a href="https://github.com/square/leakcanary" target="_blank" rel="noopener">square/leakcanary</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/LeakCanary/" rel="tag"># LeakCanary</a>
+          
+            <a href="/tags/内存泄露/" rel="tag"># 内存泄露</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2016/10/29/5.git-gerrit使用记录/" rel="next" title="git & gerrit 使用记录">
+                <i class="fa fa-chevron-left"></i> git & gerrit 使用记录
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2016/11/04/7.compileSdkVersion、targetSdkVersion和minSdkVersion之我见/" rel="prev" title="compileSdkVersion、targetSdkVersion和minSdkVersion之我见">
+                compileSdkVersion、targetSdkVersion和minSdkVersion之我见 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">贝风</p>
+              <p class="site-description motion-element" itemprop="description">code and life.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#LeakCanary使用说明"><span class="nav-number">1.</span> <span class="nav-text">LeakCanary使用说明</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#原理"><span class="nav-number">1.1.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#检测流程图"><span class="nav-number">1.2.</span> <span class="nav-text">检测流程图</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用说明"><span class="nav-number">1.3.</span> <span class="nav-text">使用说明</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#结果分析"><span class="nav-number">2.</span> <span class="nav-text">结果分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#实例一"><span class="nav-number">2.1.</span> <span class="nav-text">实例一</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#实例二"><span class="nav-number">2.2.</span> <span class="nav-text">实例二</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#补充"><span class="nav-number">3.</span> <span class="nav-text">补充</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#参考博客"><span class="nav-number">4.</span> <span class="nav-text">参考博客</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">贝风</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Muse</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
