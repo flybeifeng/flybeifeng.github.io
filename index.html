@@ -294,6 +294,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Unity开发/" itemprop="url" rel="index">
+                    <span itemprop="name">Unity开发</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -322,94 +344,14 @@
 
       
         
-          
-            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Unity 是一款跨平台2D / 3D 游戏引擎，作为 Unity 开发者，我们有必要了解一些iOS平台的相关知识。</p>
-<h2 id="工具准备"><a href="#工具准备" class="headerlink" title="工具准备"></a>工具准备</h2><p>Unity、Xcode</p>
-<h2 id="导出项目"><a href="#导出项目" class="headerlink" title="导出项目"></a>导出项目</h2><p>因为 iOS 项目比较特殊，Unity只能导出项目然后才能在 Xcode 运行、打包以及上传</p>
-<ul>
-<li>选择平台 打开 File/Build Settings</li>
-</ul>
-<p><img src="/2019/02/21/9-Unity之iOS项目初识/select_platform.png" width="260" height="331"><br><!-- ![select_platform](select_platform.png) --></p>
-<ul>
-<li>选择SDK 打开 Player Settings，找到Target SDK</li>
-</ul>
-<!-- ![select_sdk](select_sdk.png) -->
-<p><img src="/2019/02/21/9-Unity之iOS项目初识/select_sdk.png" width="400" height="478"></p>
-<blockquote>
-<p> <strong>Device SDK</strong> 是在真机上运行，<strong>Simulator SDK</strong> 是在模拟器上运行。</p>
-</blockquote>
-<ul>
-<li>选择好SDK之后，直接点击 Build，导出的工程目录结构如下</li>
-</ul>
-<p><img src="/2019/02/21/9-Unity之iOS项目初识/project_dir.png" alt="project_dir"></p>
-<blockquote>
-<p>双击 <strong>Unity-iPhone.xcodeproj</strong> 可以直接打开Xcode运行工程</p>
-</blockquote>
-<p><strong><em>注：</em></strong> 导出项目本身不需要任何 iOS 相关的环境，因此使用 <strong>Windows</strong> 也可以导出 iOS 项目</p>
-<h2 id="Unity-与-iOS-交互"><a href="#Unity-与-iOS-交互" class="headerlink" title="Unity 与 iOS 交互"></a>Unity 与 iOS 交互</h2><h3 id="Unity-调用-iOS"><a href="#Unity-调用-iOS" class="headerlink" title="Unity 调用 iOS"></a>Unity 调用 iOS</h3><h4 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h4><ul>
-<li>1、Unity支持 C# 通过调用DLL的方式来调用 C++</li>
-<li>2、iOS支持 C++ 和 OC混编的， C++ 可以调用 OC<blockquote>
-<p>基于以上两点，我们可以通过 C# -&gt; C++ -&gt; OC实现 Unity 调用 OC</p>
-</blockquote>
-</li>
-</ul>
-<h4 id="Unity-端代码"><a href="#Unity-端代码" class="headerlink" title="Unity 端代码"></a>Unity 端代码</h4><ul>
-<li>引入头文件</li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> System.Runtime.InteropServices;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>声明</li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">[<span class="meta">DllImport(<span class="meta-string">"__Internal"</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">string</span> <span class="title">Func1Bridge</span>(<span class="params"><span class="keyword">int</span> pack</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">struct</span> strutDict</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">string</span> key;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">string</span> <span class="keyword">value</span>;</span><br><span class="line">&#125;</span><br><span class="line">[<span class="meta">DllImport(<span class="meta-string">"__Internal"</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">Func2Bridge</span>(<span class="params">strutDict dict</span>)</span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>调用</li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">btnClick</span>(<span class="params"><span class="keyword">int</span> key</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (key)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> UNITY_IOS &amp;&amp; !UNITY_EDITOR</span></span><br><span class="line">            <span class="keyword">string</span> str = Func1Bridge(<span class="number">1</span>);</span><br><span class="line">            Toast.instance.show(str);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">            strutDict strutDict = <span class="keyword">new</span> strutDict();</span><br><span class="line">            strutDict.key = <span class="string">"key1"</span>;</span><br><span class="line">            strutDict.<span class="keyword">value</span> = <span class="string">"value1"</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> UNITY_IOS &amp;&amp; !UNITY_EDITOR</span></span><br><span class="line">            Func2Bridge(strutDict);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="iOS-端代码"><a href="#iOS-端代码" class="headerlink" title="iOS 端代码"></a>iOS 端代码</h4><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> &#123;</span><br><span class="line">    <span class="function"><span class="keyword">char</span>* <span class="title">Func1Bridge</span><span class="params">(<span class="keyword">int</span> pack)</span> </span>&#123;</span><br><span class="line">        NSLog(@<span class="string">"Func1Bridge:%d"</span>,pack);</span><br><span class="line">        <span class="keyword">return</span> strdup([@<span class="string">"iOS click"</span> UTF8String]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">strutDict</span></span></span><br><span class="line"><span class="class">    &#123;</span></span><br><span class="line">         <span class="keyword">const</span> <span class="keyword">char</span>* key;</span><br><span class="line">         <span class="keyword">const</span> <span class="keyword">char</span>*  value;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">Func2Bridge</span><span class="params">(strutDict dict)</span> </span>&#123;</span><br><span class="line">        NSLog(@<span class="string">"Func2Bridge---key:%@,value:%@"</span>,</span><br><span class="line">        [NSString stringWithUTF8String:dict.key],</span><br><span class="line">        [NSString stringWithUTF8String:dict.value]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p><strong>最后，经过尝试</strong></p>
-<ul>
-<li>Unity向iOS传递参数类型：bool、int、float、string(char *)、struct 等</li>
-<li>调用后的返回值：bool、int、float、string(char *) 等</li>
-</ul>
-</blockquote>
-<h3 id="iOS-调用-Unity"><a href="#iOS-调用-Unity" class="headerlink" title="iOS 调用 Unity"></a>iOS 调用 Unity</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UnitySendMessage(<span class="string">"GameObjectName"</span>, <span class="string">"MethodName"</span>, <span class="string">"Message"</span>);</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>iOS 调用 Unity 方法比较简单，传递的参数也只有string类型，并且只能传递一个，没有返回值</p>
-</blockquote>
-<h2 id="更新-Unity-端代码"><a href="#更新-Unity-端代码" class="headerlink" title="更新 Unity 端代码"></a>更新 Unity 端代码</h2><p>当 Untiy 代码有更新之后，需要重新打包导出项目，此时旧项目已经有了 iOS 端代码，直接覆盖显然不合适，只需要替换部分文件即可。</p>
-<blockquote>
-<p>需要替换的文件为 <strong>MapFileParser</strong>， <strong>MapFileParser.sh</strong>，<strong>data</strong>，<strong>Libraries</strong>，<strong>Classes/Native</strong></p>
-</blockquote>
-<p><img src="/2019/02/21/9-Unity之iOS项目初识/changed_dir.png" alt="changed_dir"></p>
-<blockquote>
-<p><strong>注意</strong></p>
-<ul>
-<li>1、Native 文件夹直接替换有时会出现问题，最好是在Xcode里面删除，然后再引用最新的</li>
-<li>2、如果 Unity 代码调用到平台硬件（相机、麦克风等）运行到设备之后无法使用硬件，需要替换整个项目，然后重新导入iOS代码。</li>
-</ul>
-</blockquote>
-<h2 id="拓展"><a href="#拓展" class="headerlink" title="拓展"></a>拓展</h2><h3 id="P-Invoke回调函数"><a href="#P-Invoke回调函数" class="headerlink" title="P/Invoke回调函数"></a>P/Invoke回调函数</h3><h4 id="Unity-端代码-1"><a href="#Unity-端代码-1" class="headerlink" title="Unity 端代码"></a>Unity 端代码</h4><ul>
-<li>声明  </li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">delegate</span> <span class="keyword">void</span> <span class="title">LibCallback</span>(<span class="params"><span class="keyword">string</span> msg</span>)</span>;</span><br><span class="line">[<span class="meta">AOT.MonoPInvokeCallback(typeof(LibCallback))</span>]</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">Callback</span>(<span class="params"><span class="keyword">string</span> msg</span>)</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    Toast.instance.show(msg);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">[<span class="meta">DllImport(<span class="meta-string">"__Internal"</span>)</span>]</span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">extern</span> <span class="keyword">void</span> <span class="title">SetLibCallback</span>(<span class="params">LibCallback callback</span>)</span>;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>设置回调</li>
-</ul>
-<figure class="highlight csharp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Start</span> (<span class="params"></span>)</span> &#123;</span><br><span class="line">      Debug.Log(<span class="string">"Start"</span>);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">if</span> UNITY_IOS &amp;&amp; !UNITY_EDITOR</span></span><br><span class="line">      SetLibCallback(Callback);</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h4 id="iOS-端代码-1"><a href="#iOS-端代码-1" class="headerlink" title="iOS 端代码"></a>iOS 端代码</h4><ul>
-<li>声明</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">void</span><span class="params">(*monoCallback)</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* str)</span></span>;</span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> &#123;</span><br><span class="line">    <span class="function"><span class="keyword">typedef</span> <span class="title">void</span><span class="params">(*monoCallback)</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* str)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">SetLibCallback</span><span class="params">(monoCallback callback)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">CallTest</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MonoHandler</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    monoCallback m_callback;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setCallback</span><span class="params">(monoCallback callback)</span> </span>&#123;</span><br><span class="line">        m_callback = callback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sendMesage</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* msg)</span> </span>&#123;</span><br><span class="line">        m_callback(msg);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">MonoHandler handler;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SetLibCallback</span><span class="params">(monoCallback callback)</span> </span>&#123;</span><br><span class="line">    handler.setCallback(callback);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">CallTest</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* p = <span class="string">"message from lib"</span>;</span><br><span class="line">    handler.sendMesage(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<ul>
-<li>调用</li>
-</ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Func2Bridge</span><span class="params">(strutDict dict)</span> </span>&#123;</span><br><span class="line">    CallTest();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>本文主要分享了 Unity 与 iOS 之间的交互，以及Unity导出 iOS 工程与更新到最新代码的方法。</p>
-<h3 id="参考博客"><a href="#参考博客" class="headerlink" title="参考博客"></a>参考博客</h3><p><a href="https://docs.unity3d.com/Manual/PluginsForIOS.html" target="_blank" rel="noopener">Unity官方文档</a></p>
-<p><a href="https://www.jianshu.com/p/35ade1078d79" target="_blank" rel="noopener">与iOS、Android的交互 理论篇</a></p>
-
-          
+          <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Unity 是一款跨平台2D / 3D 游戏引擎，作为 Unity 开发者，我们有必要了解一些iOS平台的相关知识。</p>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2019/02/21/9-Unity之iOS项目初识/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1679,7 +1621,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>

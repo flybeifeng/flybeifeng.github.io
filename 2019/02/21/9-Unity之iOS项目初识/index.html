@@ -79,22 +79,22 @@
 
 
 
-<meta name="description" content="前言Unity 是一款跨平台2D / 3D 游戏引擎，作为 Unity 开发者，我们有必要了解一些iOS平台的相关知识。 工具准备Unity、Xcode 导出项目因为 iOS 项目比较特殊，Unity只能导出项目然后才能在 Xcode 运行、打包以及上传  选择平台 打开 File/Build Settings    选择SDK 打开 Player Settings，找到Target SDK">
+<meta name="description" content="前言Unity 是一款跨平台2D / 3D 游戏引擎，作为 Unity 开发者，我们有必要了解一些iOS平台的相关知识。">
 <meta name="keywords" content="Unity,iOS">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Unity之iOS项目初识">
 <meta property="og:url" content="http://yoursite.com/2019/02/21/9-Unity之iOS项目初识/index.html">
 <meta property="og:site_name" content="贝风的博客">
-<meta property="og:description" content="前言Unity 是一款跨平台2D / 3D 游戏引擎，作为 Unity 开发者，我们有必要了解一些iOS平台的相关知识。 工具准备Unity、Xcode 导出项目因为 iOS 项目比较特殊，Unity只能导出项目然后才能在 Xcode 运行、打包以及上传  选择平台 打开 File/Build Settings    选择SDK 打开 Player Settings，找到Target SDK">
+<meta property="og:description" content="前言Unity 是一款跨平台2D / 3D 游戏引擎，作为 Unity 开发者，我们有必要了解一些iOS平台的相关知识。">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="http://yoursite.com/2019/02/21/9-Unity之iOS项目初识/select_platform.png">
 <meta property="og:image" content="http://yoursite.com/2019/02/21/9-Unity之iOS项目初识/select_sdk.png">
 <meta property="og:image" content="http://yoursite.com/2019/02/21/9-Unity之iOS项目初识/project_dir.png">
 <meta property="og:image" content="http://yoursite.com/2019/02/21/9-Unity之iOS项目初识/changed_dir.png">
-<meta property="og:updated_time" content="2019-02-21T12:55:45.091Z">
+<meta property="og:updated_time" content="2019-02-22T09:45:55.984Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Unity之iOS项目初识">
-<meta name="twitter:description" content="前言Unity 是一款跨平台2D / 3D 游戏引擎，作为 Unity 开发者，我们有必要了解一些iOS平台的相关知识。 工具准备Unity、Xcode 导出项目因为 iOS 项目比较特殊，Unity只能导出项目然后才能在 Xcode 运行、打包以及上传  选择平台 打开 File/Build Settings    选择SDK 打开 Player Settings，找到Target SDK">
+<meta name="twitter:description" content="前言Unity 是一款跨平台2D / 3D 游戏引擎，作为 Unity 开发者，我们有必要了解一些iOS平台的相关知识。">
 <meta name="twitter:image" content="http://yoursite.com/2019/02/21/9-Unity之iOS项目初识/select_platform.png">
 
 
@@ -298,6 +298,28 @@
           </span>
 
           
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Unity开发/" itemprop="url" rel="index">
+                    <span itemprop="name">Unity开发</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -325,7 +347,7 @@
       
 
       
-        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Unity 是一款跨平台2D / 3D 游戏引擎，作为 Unity 开发者，我们有必要了解一些iOS平台的相关知识。</p>
+        <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Unity 是一款跨平台2D / 3D 游戏引擎，作为 Unity 开发者，我们有必要了解一些iOS平台的相关知识。<a id="more"></a></p>
 <h2 id="工具准备"><a href="#工具准备" class="headerlink" title="工具准备"></a>工具准备</h2><p>Unity、Xcode</p>
 <h2 id="导出项目"><a href="#导出项目" class="headerlink" title="导出项目"></a>导出项目</h2><p>因为 iOS 项目比较特殊，Unity只能导出项目然后才能在 Xcode 运行、打包以及上传</p>
 <ul>
@@ -383,6 +405,9 @@
 <blockquote>
 <p>需要替换的文件为 <strong>MapFileParser</strong>， <strong>MapFileParser.sh</strong>，<strong>data</strong>，<strong>Libraries</strong>，<strong>Classes/Native</strong></p>
 </blockquote>
+<blockquote>
+<p>其中 <strong>Classes/Native</strong> 文件需要以导入的方式替换</p>
+</blockquote>
 <p><img src="/2019/02/21/9-Unity之iOS项目初识/changed_dir.png" alt="changed_dir"></p>
 <blockquote>
 <p><strong>注意</strong></p>
@@ -402,7 +427,7 @@
 <h4 id="iOS-端代码-1"><a href="#iOS-端代码-1" class="headerlink" title="iOS 端代码"></a>iOS 端代码</h4><ul>
 <li>声明</li>
 </ul>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">void</span><span class="params">(*monoCallback)</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* str)</span></span>;</span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> &#123;</span><br><span class="line">    <span class="function"><span class="keyword">typedef</span> <span class="title">void</span><span class="params">(*monoCallback)</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* str)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">SetLibCallback</span><span class="params">(monoCallback callback)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">CallTest</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MonoHandler</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    monoCallback m_callback;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setCallback</span><span class="params">(monoCallback callback)</span> </span>&#123;</span><br><span class="line">        m_callback = callback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sendMesage</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* msg)</span> </span>&#123;</span><br><span class="line">        m_callback(msg);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">MonoHandler handler;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SetLibCallback</span><span class="params">(monoCallback callback)</span> </span>&#123;</span><br><span class="line">    handler.setCallback(callback);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">CallTest</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* p = <span class="string">"message from lib"</span>;</span><br><span class="line">    handler.sendMesage(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">void</span><span class="params">(*monoCallback)</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* str)</span></span>;</span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> &#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">SetLibCallback</span><span class="params">(monoCallback callback)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">CallTest</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MonoHandler</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    monoCallback m_callback;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">setCallback</span><span class="params">(monoCallback callback)</span> </span>&#123;</span><br><span class="line">        m_callback = callback;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sendMesage</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span>* msg)</span> </span>&#123;</span><br><span class="line">        m_callback(msg);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">MonoHandler handler;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">SetLibCallback</span><span class="params">(monoCallback callback)</span> </span>&#123;</span><br><span class="line">    handler.setCallback(callback);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">CallTest</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">char</span>* p = <span class="string">"message from lib"</span>;</span><br><span class="line">    handler.sendMesage(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ul>
 <li>调用</li>
 </ul>
@@ -538,7 +563,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
