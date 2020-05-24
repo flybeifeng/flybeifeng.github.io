@@ -86,15 +86,15 @@
 <meta property="og:site_name" content="贝风的博客">
 <meta property="og:description" content="Bitmap内存占用的计算Bitmap加载进内存后占用的内存大小主要取决于三个因数">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://o9gk0j9tg.bkt.clouddn.com/image/before.png">
-<meta property="og:image" content="http://o9gk0j9tg.bkt.clouddn.com/hdpi.png">
-<meta property="og:image" content="http://o9gk0j9tg.bkt.clouddn.com/mdpi.png">
-<meta property="og:image" content="http://o9gk0j9tg.bkt.clouddn.com/xhdpi.png">
-<meta property="og:updated_time" content="2019-02-18T02:02:55.787Z">
+<meta property="og:image" content="http://yoursite.com/2016/10/23/3.bitmap占用内存计算与优化方式/image_before.png">
+<meta property="og:image" content="http://yoursite.com/2016/10/23/3.bitmap占用内存计算与优化方式/hdpi.png">
+<meta property="og:image" content="http://yoursite.com/2016/10/23/3.bitmap占用内存计算与优化方式/mdpi.png">
+<meta property="og:image" content="http://yoursite.com/2016/10/23/3.bitmap占用内存计算与优化方式/xhdpi.png">
+<meta property="og:updated_time" content="2020-03-09T02:13:27.480Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="bitmap占用内存计算与优化方式">
 <meta name="twitter:description" content="Bitmap内存占用的计算Bitmap加载进内存后占用的内存大小主要取决于三个因数">
-<meta name="twitter:image" content="http://o9gk0j9tg.bkt.clouddn.com/image/before.png">
+<meta name="twitter:image" content="http://yoursite.com/2016/10/23/3.bitmap占用内存计算与优化方式/image_before.png">
 
 
 
@@ -416,15 +416,15 @@
 <li>R是色彩格式对应的字节(android默认为ARGB_8888，即占4个字节)</li>
 </ul>
 </blockquote>
-<p>例子：<br>一张（1280*1024）的图片在dpi为240的设备上<br>图片加载前程序占用的内存是：<br><img src="http://o9gk0j9tg.bkt.clouddn.com/image/before.png" alt></p>
+<p>例子：<br>一张（1280*1024）的图片在dpi为240的设备上<br>图片加载前程序占用的内存是：<br><img src="/2016/10/23/3.bitmap占用内存计算与优化方式/image_before.png" alt></p>
 <blockquote>
-<p>如果图片放在drawable-hdpi的文件夹里所占用的内存就是：<br><img src="http://o9gk0j9tg.bkt.clouddn.com/hdpi.png" alt><br>差值为：8.145MB - 3.145MB = 5 MB<br>用上述公式计算出加载图片所占内存为：<br>（1280 *（240/240））*（1024*（240/240））*4  = 5242880 B = 5MB</p>
+<p>如果图片放在drawable-hdpi的文件夹里所占用的内存就是：<br><img src="/2016/10/23/3.bitmap占用内存计算与优化方式/hdpi.png" alt><br>差值为：8.145MB - 3.145MB = 5 MB<br>用上述公式计算出加载图片所占内存为：<br>（1280 *（240/240））*（1024*（240/240））*4  = 5242880 B = 5MB</p>
 </blockquote>
 <blockquote>
-<p>如果图片放在drawable-mdpi的文件夹里所占用的内存就是：<br> <img src="http://o9gk0j9tg.bkt.clouddn.com/mdpi.png" alt><br> 差值为：14.395MB - 3.145MB = 11.25 MB<br>用上述公式计算出加载图片所占内存为：<br>（1280 *（240/160））*（1024*（240/160））*4  =  11796480 B = 11.25MB</p>
+<p>如果图片放在drawable-mdpi的文件夹里所占用的内存就是：<br> <img src="/2016/10/23/3.bitmap占用内存计算与优化方式/mdpi.png" alt><br> 差值为：14.395MB - 3.145MB = 11.25 MB<br>用上述公式计算出加载图片所占内存为：<br>（1280 *（240/160））*（1024*（240/160））*4  =  11796480 B = 11.25MB</p>
 </blockquote>
 <blockquote>
-<p>如果图片放在drawable-xhdpi的文件夹里所占用的内存就是：<br> <img src="http://o9gk0j9tg.bkt.clouddn.com/xhdpi.png" alt><br>   差值为：5.985MB - 3.145MB = 2.84 MB<br>用上述公式计算出加载图片所占内存为：<br>（1280 *（240/320））*（1024*（240/320））*4  =  737,280 B = 2.8125MB</p>
+<p>如果图片放在drawable-xhdpi的文件夹里所占用的内存就是：<br> <img src="/2016/10/23/3.bitmap占用内存计算与优化方式/xhdpi.png" alt><br>   差值为：5.985MB - 3.145MB = 2.84 MB<br>用上述公式计算出加载图片所占内存为：<br>（1280 *（240/320））*（1024*（240/320））*4  =  737,280 B = 2.8125MB</p>
 </blockquote>
 <p><strong>注意：</strong><br>1、若在多个资源文件夹都有同一张图片，android系统会首先从与盒子相同的dpi的资源文件夹开始检索，若没有则往上检索，若往上都没有，再往下检索。</p>
 <blockquote>
@@ -662,7 +662,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>
